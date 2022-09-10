@@ -68,3 +68,5 @@ output application/json
 		</ee:transform>
 	</flow>
 </mule>
+
+<!-- https://help.mulesoft.com/s/question/0D52T00004mXXYgSAO/add-payload-into-arraylist-in-a-loop-in-mule-4 -->
