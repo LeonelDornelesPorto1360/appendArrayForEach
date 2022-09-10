@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b4af78ba-2f8b-4601-9900-a5c91986ad22" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="testeFlow" doc:id="4f045f5a-9966-4ab2-a67b-63d00099e3e2" >
+		<http:listener doc:name="Listener" doc:id="2dd4c034-e9bc-46e0-adaa-d15b66563648" config-ref="HTTP_Listener_config" path="/teste"/>
+		<ee:transform doc:name="Transform Message" doc:id="d29e604f-e6ed-49c9-9713-6c0404361671" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="requestTransform" ><![CDATA[[]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="e2773dd5-5478-4483-a218-82ff8f5d8283">
+			<http:request method="GET" doc:name="Request" doc:id="c630bcf3-a4a6-44d4-b904-ee278baffac2" url="https://b34427e7-cab4-4f75-a18c-8999342999bd.mock.pstmn.io/testeBruno" outputMimeType="application/json" />
+			<ee:transform doc:name="Transform Message" doc:id="5112ad4c-db42-4fac-a1f5-558d838d3fd4" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"chave": if ( payload.chave != null ) (payload.chave as String) else (''),
+	"nome": if ( payload.nome != null ) (payload.nome as String) else (''),
+	"email": if ( payload.email[0] != null ) (payload.email[0] as String) else (''),
+	"cargo": if ( payload.cargo.nomeAbreviado != null ) (payload.cargo.nomeAbreviado as String) else (''),
+	"funcao": if ( payload.funcao.nomeAbreviado != null ) (payload.funcao.nomeAbreviado as String) else (''),
+	"empresa": if ( payload.empresa.sigla != null ) (payload.empresa.sigla as String) else (''),
+	"unidadeOrganizacional": if ( payload.unidadeOrganizacional != null ) (payload.unidadeOrganizacional as String) else (''),
+	"imovel": if ( payload.imovel.sigla != null ) (payload.imovel.sigla as String) else (''),
+	"gerenciaMaior": if ( payload.unidadeOrganizacional != null ) (payload.unidadeOrganizacional.split('/')[0] as String) else (''),
+	"uf": if ( payload.imovel.uf != null ) (payload.imovel.uf as String) else (''),
+	"dataFim": if ( payload.dataFim != null ) (payload.dataFim as String) else (''),
+	"vinculo": if ( payload.vinculo != null ) (payload.vinculo as String) else (''),
+	"regime": if ( payload.regimeTrabalho[0].nome != null ) (payload.regimeTrabalho[0].nome as String) else ('')
+}
+
+]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<ee:transform doc:name="Transform Message" doc:id="759d9b3e-18e3-420d-9535-1e5fa851f480" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="requestTransform" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.requestTransform << payload]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<logger level="INFO" doc:name="Logger" doc:id="687cd481-ca24-4b1f-88d1-6837d1456fff" message="#[payload]" />
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="bf7d03e9-66c9-4f63-8516-3c2b109b19eb" message="#[vars.requestTransform]"/>
+		<ee:transform doc:name="Transform Message" doc:id="94812fd1-0245-4490-82bd-eb285a64e850" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "items":vars.requestTransform
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
